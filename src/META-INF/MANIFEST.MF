@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Main-Class: de.lippertmarkus.rapla2csv.Program
+Name: rapla2csv
+Specification-Title: rapla2csv
+Specification-Version: 1.0
+Specification-Vendor: Markus Lippert
+Implementation-Title: rapla2csv
+Implementation-Version: 1.0
+Implementation-Vendor: Markus Lippert
