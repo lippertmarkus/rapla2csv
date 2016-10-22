@@ -1,4 +1,4 @@
-# rapla2csv
+# rapla2csv v1.0
 Little program to export appointments from rapla (web calendar) to CSV file, which can then be imported into calendars (like Google, etc).
 Programmed because some rapla calendars (especially the DHBW ones) don't have the option for rapla's integrated iCal support enabled.
 
