@@ -25,17 +25,37 @@ import java.util.regex.Pattern;
 
 /**
  * Class for extracting lessons/appointments from a rapla web calendar.
- *
- * @author Markus Lippert
  */
 public class RaplaReader
 {
+    /**
+     * Begin of the extraction date range
+     */
     private LocalDate dateFrom;
+
+    /**
+     * End of the extraction date range
+     */
     private LocalDate dateUntil;
+
+    /**
+     * Link to the rapla web calendar view with a key or a user and file
+     */
     private URIBuilder raplaLink;
+
+    /**
+     * List of the extracted lessons
+     */
     private List<Lesson> extractedLessons = new ArrayList<>();
 
-    private int countExtractedLessons = 0;
+    /**
+     * Counter for all processed lessons while extraction
+     */
+    private int countLessons = 0;
+
+    /**
+     * Counter for skipped lessons while extraction
+     */
     private int countSkippedLessons = 0;
 
 
@@ -138,7 +158,7 @@ public class RaplaReader
      *
      * @param raplaURI rapla uri
      * @param key      the extracted key parameter of the url, may null
-     * @param page     the extracted page parameter of the url, may null TODO test if page=calendar
+     * @param page     the extracted page parameter of the url, may null
      * @param user     the extracted user parameter of the url, may null
      * @param file     the extracted file parameter of the url, may null
      * @return cleaned rapla uri
@@ -188,7 +208,7 @@ public class RaplaReader
                 if (extractedLesson == null)
                     continue;
 
-                countExtractedLessons++;
+                countLessons++;
                 extractedLessons.add(extractedLesson);
             }
 
@@ -304,6 +324,8 @@ public class RaplaReader
         if (matcher.find())
             room = matcher.group(1);
 
+        System.out.println("room: " + room);
+
         return room;
     }
 
@@ -382,7 +404,7 @@ public class RaplaReader
      */
     public String getExtractedLessonsInfo()
     {
-        return (countExtractedLessons - countSkippedLessons) + " lessons extracted, " + countSkippedLessons + " lessons countSkippedLessons";
+        return (countLessons - countSkippedLessons) + " lessons extracted, " + countSkippedLessons + " lessons skipped";
     }
 
     /**
@@ -393,7 +415,7 @@ public class RaplaReader
      */
     public void exportToCSV(String filename) throws Exception
     {
-        if ((countExtractedLessons - countSkippedLessons) == 0)
+        if ((countLessons - countSkippedLessons) == 0)
             throw new Exception("0 Lessons extracted, so nothing to export");
 
         // header for calendar CSV files
