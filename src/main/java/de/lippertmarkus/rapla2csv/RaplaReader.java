@@ -3,16 +3,15 @@ package de.lippertmarkus.rapla2csv;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import javax.print.DocFlavor;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.DayOfWeek;
@@ -42,6 +41,11 @@ public class RaplaReader
      * Link to the rapla web calendar view with a key or a user and file
      */
     private URIBuilder raplaLink;
+
+    /**
+     * Proxy setting if provided
+     */
+    private Proxy proxy;
 
     /**
      * List of the extracted lessons
@@ -113,6 +117,10 @@ public class RaplaReader
         dateFrom = from;
         dateUntil = until;
         this.raplaLink = prepareRaplaUri(raplaLink);
+    }
+
+    public void setProxy(Proxy proxy) {
+        this.proxy = proxy;
     }
 
     /**
@@ -230,8 +238,14 @@ public class RaplaReader
     {
         setRaplaUrlDateParameters(weekMondayDate, raplaLink);
 
+        Connection raplaConnection = Jsoup.connect(raplaLink.toString());
+
+        // set proxy if provided
+        if(proxy != null)
+            raplaConnection.proxy(proxy);
+
         // get HTML document for current week
-        Document doc = Jsoup.connect(raplaLink.toString()).get();
+        Document doc = raplaConnection.get();
 
         // lessons information is inside span with CSS class .tooltip
         return doc.select(".tooltip");

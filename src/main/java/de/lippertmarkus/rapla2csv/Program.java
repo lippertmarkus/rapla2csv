@@ -2,6 +2,8 @@ package de.lippertmarkus.rapla2csv;
 
 import org.apache.commons.cli.*;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
 import java.time.LocalDate;
 
@@ -40,6 +42,11 @@ public class Program
      * Link to the rapla web calendar view with a key or a user and file
      */
     private URL raplaLink;
+
+    /**
+     * Proxy setting if provided
+     */
+    private Proxy proxy;
 
     /**
      * File name of the CSV file to export
@@ -121,6 +128,12 @@ public class Program
                 .required()
                 .build()
         );
+        exportOptions.addOption(Option.builder("p")
+                .longOpt("proxy")
+                .argName("proxy")
+                .hasArg()
+                .desc("Your HTTP proxy host and port, e.g. proxy:1234")
+                .build());
         exportOptions.addOption(Option.builder("o")
                 .longOpt("output")
                 .argName("CSV-file")
@@ -185,6 +198,9 @@ public class Program
         if (exportCL.hasOption("o"))
             exportFileName = exportCL.getOptionValue("o");
 
+        if(exportCL.hasOption("p"))
+            proxy = createProxyFromString(exportCL.getOptionValue("p"));
+
         // check if types of export options are correct
         try {
             timeFrom = LocalDate.parse(exportCL.getOptionValue("f"));
@@ -192,6 +208,28 @@ public class Program
             raplaLink = new URL(exportCL.getOptionValue("l"));
         } catch (Exception e) {
             throw new ParseException("Options are not in a valid format");
+        }
+    }
+
+    /**
+     * Parses a string containing host and port to an instance of Proxy
+     *
+     * @param proxyString contains host and port in format "host:port"
+     * @return Proxy containing the settings from string
+     * @throws ParseException when parsing the string fails
+     */
+    private Proxy createProxyFromString(String proxyString) throws ParseException {
+        String[] parts = proxyString.split(":");
+
+        // string must contain host and port
+        if(parts.length != 2)
+            throw new ParseException("Invalid format for proxy");
+
+        // check if port is number
+        try {
+            return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(parts[0], Integer.parseInt(parts[1])));
+        } catch (NumberFormatException e) {
+            throw new ParseException("Invalid format for proxy");
         }
     }
 
@@ -211,6 +249,10 @@ public class Program
     {
         try {
             raplaReader = new RaplaReader(timeFrom, timeUntil, raplaLink);
+
+            if(proxy != null)
+                raplaReader.setProxy(proxy);
+
             raplaReader.getLessonsFromRapla();
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
